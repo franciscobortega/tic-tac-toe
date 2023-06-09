@@ -1,30 +1,52 @@
-from turtle import Turtle, Screen
-
+from turtle import Screen
 from board import Board
 from game import Game
+from player import Player
 
-game = Game()
+# Initialize screen
+screen = Screen()
+screen.setup(width=600, height=600)
+screen.title("Tic Tac Toe")
+screen.bgcolor("black")
+screen.tracer(0)
+
+# initial class instances, 'X' player always goes first
+player = Player("X")
 board = Board()
-game.print_board()
+game = Game()
 
-print(board.is_full())
+screen.update()
+screen.listen()
 
-game_not_over = True
-while game_not_over:
 
-    if board.is_full():
-        game_not_over = False
-        print("It's a draw!")
-        continue
+def next_move(x, y):
+    # calculates values to be added to 2D matrix
+    row = int((y + 300) // 200)
+    col = int((x + 300) // 200)
 
-    print(f"Player {game.current_player}: ", end="")
-    board.make_move(game.current_player)
-    print(board.board)
+    if not board.is_not_available(row, col):
+        # coordinates for center of square that was clicked
+        x_coord = col * 200 - 200
+        y_coord = row * 200 - 200
 
-    # check if 3 in a row
-    if board.three_in_a_row(game.current_player):
-        game_not_over = False
-        print(f"{game.current_player} won!")
-        continue
+        # Validate and append player move to 2D matrix and display move on GUI
+        board.make_move(game.current_player, row, col)
+        player.draw_player_shape(game.current_player, x_coord, y_coord)
+        print(board.display())
 
-    game.alternate_player()
+        # Determine if game has ended with winner or a draw
+        if board.three_in_a_row(game.current_player):
+            print(f"Player {game.current_player} won!")
+            board.game_over()
+            screen.update()
+            screen.exitonclick()
+        elif board.is_full():
+            print("It's a draw!")
+            board.game_over()
+            screen.exitonclick()
+
+        game.alternate_player()
+
+
+screen.onclick(next_move)
+screen.mainloop()
